@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judge My Face</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <p id="info" class="center">OpenCV.js is loading...</p>
+    
+    <div id="mainView" class="container">
+        <canvas class="center-block" id="canvasOutput" width=320 height=240></canvas>
+    </div>
+    <div class="invisible">
+        <video id="video">Your browser does not support the video tag.</video>
+    </div>
+
+    <script src="libs/adapter-latest.js"></script>
+    <script src="libs/stats.min.js"></script>
+    <script src="libs/dat.gui.min.js"></script>
+    <script src="libs/utils.js"></script>
+    <script>
+        var featuresReady = checkFeatures(document.getElementById("info"), {webrtc: true});
+    </script>
+    <script src="js/index.js"></script>
+    <script>
+        var Module = {
+            preRun: [function() {
+                Module.FS_createPreloadedFile('/', 'cascade.xml', 'res/haarcascade_frontalface_alt.xml', true, false);
+                Module.FS_createPreloadedFile('/', 'model.caffemodel', 'res/resnet18.caffemodel', true, false);
+                Module.FS_createPreloadedFile('/', 'deploy.prototxt', 'res/resnet18_deploy.prototxt', true, false);
+            }],
+            onRuntimeInitialized: function() {onOpenCvReady();}
+        };
+    </script>
+    <script async src="libs/opencv.js"></script>
+    <div class="modal"></div>
+</body>
+</html>

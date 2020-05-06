@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Judgemental Webcam</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!--<p class="center">Hello World!</p>
+  <div class="container">
+    <img id="imageSrc" class="viewElement" alt="No Image"></img>
+  </div>
+  <p class="center"><b>imageSrc</b></p>
+
+  <input type="file" id="fileInput" name="file" />
+  <div class="container">
+    <canvas id="imageCanvas" class="viewElement"></canvas>
+  </div>
+  <p class="center"><b>imageCanvas</b></p>-->
+
+  <div class="container">
+    <video id="videoInput" class="viewElement">  </video>
+  </div>
+  <p class="center"><b>videoInput</b></p>
+
+  <div class="container">
+    <canvas id="videoCanvas" class="viewElement"></canvas>
+  </div>
+  <p class="center"><b>videoCanvas</b></p>
+
+  <div class="container">
+    <canvas id="canvasFrame" class="viewElement"></canvas>
+  </div>
+  <p class="center"><b>canvasFrame</b></p>
+
+  <div class="center">
+    <button id="startButton" onclick="startProcessing()" disabled>Start Processing</button>
+  </div>
+
+  <div class="modal"></div>
+</body>
+
+<script>
+  document.body.classList.add("loading");
+
+  let startButton = document.getElementById("startButton");
+
+  let video = document.getElementById("videoInput");
+  let canvasFrame = document.getElementById("canvasFrame");
+
+  function onOpenCvReady() {
+    document.body.classList.remove("loading");
+
+    // Open the webcam
+    navigator.mediaDevices.getUserMedia({video: true, audio: false})
+      .then(function(stream) {
+        video.srcObject = stream;
+        video.play();
+        startButton.disabled = false;
+      })
+      .catch(function (error) {
+        console.log("Oopsy doopsy " + error);
+      });
+  }
+
+  var streaming = false;
+  // Initialize the image processing elements now that the webcam is open
+  function startProcessing() {
+    if(!streaming) {
+      canvasFrame.width = video.videoWidth;
+      canvasFrame.height = video.videoHeight;
+      let context = canvasFrame.getContext("2d");
+      let src = new cv.Mat(video.videoHeight, video.videoWidth, cv.CV_8UC4);
+      let dst = new cv.Mat(video.videoHeight, video.videoWidth, cv.CV_8UC4);
+      let gray = new cv.Mat();
+      //let faces = new cv.RectVector();
+      //let classifier = new cv.CascadeClassifier();
+      //console.log(classifier.load('res/haarcascade_frontalface_alt.xml'));
+    
+      streaming = true;
+      startButton.innerText = "Stop Processing";
+      processVideo(context, src, dst, gray);
+    } else {
+      streaming = false;
+      startButton.innerText = "Start Processing";
+    }
+  }
+
+  // Recursive draw function baybee
+  const FPS = 30;
+  function processVideo(context, src, dst, gray) {
+    if(!streaming) {
+      // Clean and stop
+      src.delete();
+      dst.delete();
+      gray.delete();
+      classifier.delete();
+      return;
+    }
+    let begin = Date.now();
+    context.drawImage(video, 0, 0, canvasFrame.width, canvasFrame.height);
+    src.data.set(context.getImageData(0, 0, canvasFrame.width, canvasFrame.height).data);
+    src.copyTo(dst);
+    cv.cvtColor(dst, gray, cv.COLOR_RGBA2GRAY);
+    // Detect faces
+    //classifier.detectMultiScale(gray, faces, 1.1, 3);
+    // Draw rectangles around them
+    /*for (let i = 0; i < faces.size(); ++i) {
+      let face = faces.get(i);
+      let point1 = new cv.Point(face.x, face.y);
+      let point2 = new cv.Point(face.x + face.width, face.y + face.height);
+      cv.rectangle(dst, point1, point2, [0, 255, 0, 255]);
+    }*/
+    cv.imshow("videoCanvas", gray);
+    // schedule next one.
+    let delay = 1000/FPS - (Date.now() - begin);
+    if(delay < 0) {
+      delay = 0;
+    }
+    setTimeout(processVideo, delay, context, src, dst, gray);
+  }
+  /*
+  let imgElement = document.getElementById('imageSrc');
+  let inputElement = document.getElementById('fileInput');
+  inputElement.onchange = function() {
+    imgElement.src = URL.createObjectURL(event.target.files[0]);
+  };
+
+  imgElement.onload = function() {
+    let image = cv.imread(imgElement);
+    cv.imshow('imageCanvas', image);
+    image.delete();
+  };
+  */
+</script>
+<script async src="libs/opencv.js" onload="onOpenCvReady()" type="text/javascript"></script>
+</html>

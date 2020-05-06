@@ -1,0 +1,43 @@
+/* display loading gif and hide webpage */
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8)
+                url('res/ajax-loader.gif')
+                50% 50%
+                no-repeat;
+}
+/* prevent scrollbar from display during load */
+body.loading {
+    overflow: hidden;
+}
+/* display the modal when loading class is added to body */
+body.loading .modal {
+    display: block;
+}
+.container {
+    border: 2px solid black;
+    width: fit-content;
+    height: fit-content;
+    margin: 0px auto;
+}
+.viewElement {
+    width: 100%;
+    display: block;
+    margin: 0px;
+}
+.center {
+    text-align: center;
+}
+.center-block {
+    display: block;
+    margin: auto;
+}
+.invisible {
+    display: none;
+}
