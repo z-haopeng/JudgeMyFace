@@ -139,7 +139,7 @@ function onOpenCvReady() {
         info.innerHTML = "Required features are not ready.";
         return;
     }
-    info.innerHTML = "Get ready to be judged!";
+    info.innerHTML = "The Judgemental Webcam";
     initUI();
     startCamera();
 }
