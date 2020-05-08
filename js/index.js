@@ -80,7 +80,7 @@ function startVideoProcessing() {
 
 let threshold = 0;
 let myProgress = document.getElementById("myProgress");
-myProgress.style.width = videoWidth < 640 ? "324px" : "644px";
+myProgress.style.width = window.innerWidth < 640 ? "324px" : "644px";
 let myBar = document.getElementById("myBar");
 
 function processVideo() {
