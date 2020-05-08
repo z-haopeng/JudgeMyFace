@@ -152,6 +152,18 @@ function drawResults(ctx, results, color, size) {
 function rate(frame) {
     // Convert the color so it'll be acceptable input
     cv.cvtColor(frame, frame, cv.COLOR_RGBA2BGR);
+    // Convert to YUV, equalize Y channel, and convert back to balance out brightness levels
+    let yuvPlanes = new cv.MatVector();
+    cv.cvtColor(frame, frame, cv.COLOR_BGR2YUV);
+    cv.split(frame, yuvPlanes);
+    let Y = yuvPlanes.get(0);
+    cv.equalizeHist(Y, Y);
+    cv.merge(yuvPlanes, frame);
+    cv.cvtColor(frame, frame, cv.COLOR_YUV2BGR);
+    // Cleanup
+    yuvPlanes.delete();
+    Y.delete();
+
     let blob = cv.blobFromImage(frame, 1, new cv.Size(224,224), [104, 117, 123, 0], false, false);
     net.setInput(blob);
     let out = net.forward();
