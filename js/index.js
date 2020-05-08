@@ -19,6 +19,9 @@ let stream = null;
 let info = document.getElementById("info");
 let scoreOutput = document.getElementById("scoreOutput");
 
+let myProgress = document.getElementById("myProgress");
+let myBar = document.getElementById("myBar");
+
 function startCamera() {
     if (streaming) return;
     navigator.mediaDevices.getUserMedia({video: resolution, audio: false})
@@ -67,6 +70,8 @@ function startVideoProcessing() {
     canvasInput.height = videoHeight;
     canvasInputCtx = canvasInput.getContext("2d");
 
+    myProgress.style.width = (videoWidth+4) + "px";
+
     net = cv.readNetFromCaffe("deploy.prototxt", "model.caffemodel");
 
     srcMat = new cv.Mat(videoHeight, videoWidth, cv.CV_8UC4);
@@ -79,9 +84,6 @@ function startVideoProcessing() {
 }
 
 let threshold = 0;
-let myProgress = document.getElementById("myProgress");
-myProgress.style.width = window.innerWidth < 640 ? "324px" : "644px";
-let myBar = document.getElementById("myBar");
 
 function processVideo() {
     stats.begin();
