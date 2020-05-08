@@ -7,17 +7,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2 id="info" class="center">OpenCV.js is loading...</h2>
+    <h3 id="info" class="center">OpenCV.js is loading...</h3>
     <p class="center"><a href="https://github.com/z-haopeng/JudgeMyFace">View on GitHub</a></p>
-    
-    <div id="mainView" class="container">
-        <canvas class="center-block" id="canvasOutput" width=320 height=240></canvas>
-    </div>
-    <div class="invisible">
-        <video id="video">Your browser does not support the video tag.</video>
+    <div>
+        <div id="mainView" class="container">
+            <canvas class="center-block" id="canvasOutput" width=320 height=240></canvas>
+        </div>
+        <div class="smol">
+            <video id="video">Your browser does not support the video tag.</video>
+        </div>
     </div>
     <p id="scoreOutput" class="center"></p>
-
     <script src="libs/adapter-latest.js"></script>
     <script src="libs/stats.min.js"></script>
     <script src="libs/utils.js"></script>

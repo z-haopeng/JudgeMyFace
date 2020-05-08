@@ -41,3 +41,9 @@ body.loading .modal {
 .invisible {
     display: none;
 }
+.smol video {
+    display: block;
+    margin: 0px auto;
+    width: 0px;
+    height: 0px;
+}
