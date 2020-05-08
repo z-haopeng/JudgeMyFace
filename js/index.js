@@ -13,6 +13,7 @@ let canvasOutputCtx = canvasOutput.getContext("2d");
 let stream = null;
 
 let info = document.getElementById("info");
+let scoreOutput = document.getElementById("scoreOutput");
 
 function startCamera() {
     if (streaming) return;
@@ -50,8 +51,9 @@ let grayMat = null;
 let canvasInput = null;
 let canvasInputCtx = null;
 
-let canvasBuffer = null;
-let canvasBufferCtx = null;
+let net = null;
+
+let paused = false;
 
 function startVideoProcessing() {
     if(!streaming) {console.warn("Please startup your webcam"); return;}
@@ -61,10 +63,7 @@ function startVideoProcessing() {
     canvasInput.height = videoHeight;
     canvasInputCtx = canvasInput.getContext("2d");
 
-    canvasBuffer = document.createElement("canvas");
-    canvasBuffer.width = videoWidth;
-    canvasBuffer.height = videoHeight;
-    canvasBufferCtx = canvasInput.getContext("2d");
+    net = cv.readNetFromCaffe("deploy.prototxt", "model.caffemodel");
 
     srcMat = new cv.Mat(videoHeight, videoWidth, cv.CV_8UC4);
     grayMat = new cv.Mat(videoHeight, videoWidth, cv.CV_8UC1);
@@ -74,6 +73,8 @@ function startVideoProcessing() {
 
     requestAnimationFrame(processVideo);
 }
+
+let threshold = 0;
 
 function processVideo() {
     stats.begin();
@@ -90,13 +91,12 @@ function processVideo() {
     let size;
 
     cv.equalizeHist(grayMat, faceMat);
-    //cv.pyrDown(grayMat, faceMat);
-    //if(videoWidth > 320)
-    //   cv.pyrDown(faceMat, faceMat);
     size = faceMat.size();
+    
+    // Speed hacks: only look for faces that are 50% the height of the picture, much less intensive
     let minsize = new cv.Size(size.height*.5, size.height*.5);
-
     faceClassifier.detectMultiScale(faceMat, faceVect, 1.1, 3, 0, minsize);
+    
     for(let i = 0; i < faceVect.size(); i++) {
         let face = faceVect.get(i);
         faces.push(new cv.Rect(face.x, face.y, face.width, face.height));
@@ -104,23 +104,62 @@ function processVideo() {
     faceMat.delete();
     faceVect.delete();
 
-    canvasOutputCtx.drawImage(canvasInput, 0, 0, videoWidth, videoHeight);
-    drawResults(canvasOutputCtx, faces, "lime", size);
+    if(!paused) {
+        // Nerual net is very slow, so only run it once after a face has been on screen for a while
+        if(threshold < 500) {
+            if(faces.length > 0)
+                threshold += 2;
+            else if(threshold > 0)
+                threshold--;
+        } else if(faces.length > 0) {
+            threshold = 0;
+            rate(srcMat.roi(faces[0]));
+            // Pause the video feed for 5 seconds
+            paused = true;
+            setTimeout(function() {
+                paused = false;
+                scoreOutput.innerHTML = "";
+            }, 5000);
+        }
+        canvasOutputCtx.drawImage(canvasInput, 0, 0, videoWidth, videoHeight);
+        // Draw a red box in the picture that's actually analyzed
+        if(paused)
+            drawResults(canvasOutputCtx, faces, "red", size);
+        else
+            drawResults(canvasOutputCtx, faces, "lime", size);
+    }
     stats.end();
     requestAnimationFrame(processVideo);
 }
 
+// Draws rectangles to the output
 function drawResults(ctx, results, color, size) {
     for(let i = 0; i < results.length; ++i) {
         let rect = results[i];
         let xRatio = videoWidth/size.width;
         let yRatio = videoHeight/size.height;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = color;
-        ctx.strokeRect(rect.x*xRatio-rect.width*xRatio*.1, rect.y*yRatio-rect.height*yRatio*.1, rect.width*xRatio*1.2, rect.height*yRatio*1.2);
+        ctx.strokeRect(rect.x*xRatio, rect.y*yRatio, rect.width, rect.height);
     }
 }
 
+// Feeds the input Mat into the neural net
+function rate(frame) {
+    // Convert the color so it'll be acceptable input
+    cv.cvtColor(frame, frame, cv.COLOR_RGBA2BGR);
+    let blob = cv.blobFromImage(frame, 1, new cv.Size(224,224), [104, 117, 123, 0], false, false);
+    net.setInput(blob);
+    let out = net.forward();
+    blob.delete();
+    // It's technically an array, but there's always exactly one value in it
+    // Also it outputs values up to 50, but I'm fitting it to a 5 point scale
+    let score = Math.floor(out.data32F[0]*10)/100;
+    scoreOutput.innerHTML = score;
+    out.delete();
+}
+
+// Cleanup OpenCV resources
 function stopVideoProcessing() {
     if(srcMat != null && !srcMat.isDeleted()) srcMat.delete();
     if(grayMat != null && !grayMat.isDeleted()) grayMat.delete();
