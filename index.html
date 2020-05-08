@@ -27,6 +27,7 @@
     <script src="js/index.js"></script>
     <script>
         var Module = {
+            wasmBinaryFile: 'libs/wasm/opencv.wasm',
             preRun: [function() {
                 Module.FS_createPreloadedFile('/', 'cascade.xml', 'res/haarcascade_frontalface_alt.xml', true, false);
                 Module.FS_createPreloadedFile('/', 'model.caffemodel', 'res/resnet18.caffemodel', true, false);
@@ -35,7 +36,7 @@
             onRuntimeInitialized: function() {onOpenCvReady();}
         };
     </script>
-    <script async src="libs/opencv.js"></script>
+    <script async src="libs/wasm/opencv.js"></script>
     <div class="modal"></div>
 </body>
 </html>
