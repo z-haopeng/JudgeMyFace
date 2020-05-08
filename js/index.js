@@ -2,7 +2,11 @@
 
 document.body.classList.add("loading");
 
-let resolution = {width: {exact: 640}, height: {exact: 480}};
+let qvga = {width: {exact: 320}, height: {exact: 240}};
+
+let vga = {width: {exact: 640}, height: {exact: 480}};
+
+let resolution = window.innerWidth < 640 ? qvga : vga;
 
 let streaming = false;
 let videoHeight, videoWidth;
