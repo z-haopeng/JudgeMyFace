@@ -26,20 +26,12 @@ body.loading .modal {
     height: fit-content;
     margin: 0px auto;
 }
-.viewElement {
-    width: 100%;
-    display: block;
-    margin: 0px;
-}
 .center {
     text-align: center;
 }
 .center-block {
     display: block;
     margin: auto;
-}
-.invisible {
-    display: none;
 }
 .smol {
     position: absolute;
@@ -51,6 +43,11 @@ body.loading .modal {
     margin: 0px auto;
     width: 80px;
     height: 60px;
+}
+#canvasOutput {
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+    -moz-transform: rotateY(180deg);
 }
 #myProgress {
     display: block;
