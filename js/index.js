@@ -79,6 +79,9 @@ function startVideoProcessing() {
 }
 
 let threshold = 0;
+let myProgress = document.getElementById("myProgress");
+myProgress.style.width = videoWidth < 640 ? "324px" : "644px";
+let myBar = document.getElementById("myBar");
 
 function processVideo() {
     stats.begin();
@@ -125,6 +128,7 @@ function processVideo() {
                 scoreOutput.innerHTML = "";
             }, 5000);
         }
+        myBar.style.width = (threshold/5) + "%";
         canvasOutputCtx.drawImage(canvasInput, 0, 0, videoWidth, videoHeight);
         // Draw a red box in the picture that's actually analyzed
         if(paused)
@@ -171,7 +175,7 @@ function rate(frame) {
     // It's technically an array, but there's always exactly one value in it
     // Also it outputs values up to 50, but I'm fitting it to a 5 point scale
     let score = Math.floor(out.data32F[0]*10)/100;
-    scoreOutput.innerHTML = score;
+    scoreOutput.innerHTML = score.toFixed(2);
     out.delete();
 }
 
@@ -198,4 +202,3 @@ function onOpenCvReady() {
     initUI();
     startCamera();
 }
-
