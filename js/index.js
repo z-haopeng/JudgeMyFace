@@ -218,7 +218,7 @@ function onOpenCvReady() {
         info.innerHTML = "Required features are not ready.";
         return;
     }
-    info.innerHTML = "The Judgemental Webcam";
+    info.innerHTML = "The Judgmental Webcam";
     initUI();
     startCamera();
 }
