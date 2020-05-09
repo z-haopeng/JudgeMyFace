@@ -199,7 +199,6 @@ function stopVideoProcessing() {
 
 function stopCamera() {
     if(streaming) {
-        stopVideoProcessing();
         streaming = false;
         return true;
     }
