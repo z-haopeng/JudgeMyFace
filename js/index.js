@@ -15,6 +15,9 @@ let scoreOutput = document.getElementById("scoreOutput");
 
 let myBar = document.getElementById("myBar");
 
+let disapproval = new Audio("res/sad.mp3");
+let approval = new Audio("res/cheer.mp3");
+
 // Restarts the camera when window is resized (ie phone is rotated)
 window.addEventListener("resize", function() {
     if(stopCamera()) {
@@ -179,6 +182,10 @@ function rate(frame) {
     // Also it outputs values up to 50, but I'm fitting it to a 5 point scale
     let score = Math.floor(out.data32F[0]*10)/100;
     scoreOutput.innerHTML = score.toFixed(2);
+    if(score < 4.00)
+        disapproval.play();
+    else
+        approval.play();
     out.delete();
 }
 
