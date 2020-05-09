@@ -205,6 +205,7 @@ function initUI() {
     document.getElementById("mainView").appendChild(stats.dom);
 }
 
+// Automatically start running when OpenCV.js is ready
 function onOpenCvReady() {
     document.body.classList.remove("loading");
     if(!featuresReady) {

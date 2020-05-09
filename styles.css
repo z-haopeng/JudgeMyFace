@@ -52,7 +52,7 @@ body.loading .modal {
 #myProgress {
     display: block;
     margin: auto;
-    background-color: gray;
+    background-color: #808080;
 }
 #myBar {
     width: 0%;
