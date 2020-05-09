@@ -13,7 +13,6 @@ let stream = null;
 let info = document.getElementById("info");
 let scoreOutput = document.getElementById("scoreOutput");
 
-let myProgress = document.getElementById("myProgress");
 let myBar = document.getElementById("myBar");
 
 // Restarts the camera when window is resized (ie phone is rotated)
@@ -73,8 +72,6 @@ function startVideoProcessing() {
     canvasInput.width = videoWidth;
     canvasInput.height = videoHeight;
     canvasInputCtx = canvasInput.getContext("2d");
-
-    myProgress.style.width = (videoWidth+4) + "px";
 
     net = cv.readNetFromCaffe("deploy.prototxt", "model.caffemodel");
 
