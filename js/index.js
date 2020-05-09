@@ -2,12 +2,6 @@
 
 document.body.classList.add("loading");
 
-let qvga = {width: {exact: 320}, height: {exact: 240}};
-
-let vga = {width: {exact: 640}, height: {exact: 480}};
-
-let resolution = window.innerWidth < 640 ? qvga : vga;
-
 let streaming = false;
 let videoHeight, videoWidth;
 
@@ -22,7 +16,17 @@ let scoreOutput = document.getElementById("scoreOutput");
 let myProgress = document.getElementById("myProgress");
 let myBar = document.getElementById("myBar");
 
+// Restarts the camera when window is resized (ie phone is rotated)
+window.addEventListener("resize", function() {
+    if(stopCamera()) {
+        startCamera();
+    }
+});
+
 function startCamera() {
+    let qvga = {width: {exact: 320}, height: {exact: 240}};
+    let vga = {width: {exact: 640}, height: {exact: 480}};
+    let resolution = window.innerWidth < 640 ? qvga : vga;
     if (streaming) return;
     navigator.mediaDevices.getUserMedia({video: resolution, audio: false})
         .then(function(s) {
@@ -186,6 +190,16 @@ function stopVideoProcessing() {
     if(srcMat != null && !srcMat.isDeleted()) srcMat.delete();
     if(grayMat != null && !grayMat.isDeleted()) grayMat.delete();
     if(faceClassifier != null && !faceClassifier.isDeleted()) faceClassifier.delete();
+    if(net != null && !net.isDeleted()) net.delete();
+}
+
+function stopCamera() {
+    if(streaming) {
+        stopVideoProcessing();
+        streaming = false;
+        return true;
+    }
+    return false;
 }
 
 function initUI() {
