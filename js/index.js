@@ -18,6 +18,9 @@ let myBar = document.getElementById("myBar");
 let disapproval = new Audio("res/sad.mp3");
 let approval = new Audio("res/cheer.mp3");
 
+let now, then, elapsed, interval;
+const FPS = 30;
+
 // Restarts the camera when window is resized (ie phone is rotated)
 window.addEventListener("resize", function() {
     if(stopCamera()) {
@@ -84,66 +87,78 @@ function startVideoProcessing() {
     faceClassifier = new cv.CascadeClassifier();
     faceClassifier.load("cascade.xml");
 
-    requestAnimationFrame(processVideo);
+    then = window.performance.now();
+    interval = 1000/FPS;
+
+    processVideo();
 }
 
 let threshold = 0;
+let maxThreshold = 300;
 
 function processVideo() {
-    stats.begin();
-    
-    canvasInputCtx.drawImage(video, 0, 0, videoWidth, videoHeight);
-    let imageData = canvasInputCtx.getImageData(0, 0, videoWidth, videoHeight);
-    srcMat.data.set(imageData.data);
-    cv.cvtColor(srcMat, grayMat, cv.COLOR_RGBA2GRAY);
-    
-    let faces = [];
-    
-    let faceVect = new cv.RectVector();
-    let faceMat = new cv.Mat();
-    let size;
-
-    cv.equalizeHist(grayMat, faceMat);
-    size = faceMat.size();
-    
-    // Speed hacks: only look for faces that are 50% the height of the picture, much less intensive
-    let minsize = new cv.Size(size.height*.5, size.height*.5);
-    faceClassifier.detectMultiScale(faceMat, faceVect, 1.1, 3, 0, minsize);
-    
-    for(let i = 0; i < faceVect.size(); i++) {
-        let face = faceVect.get(i);
-        faces.push(new cv.Rect(face.x, face.y, face.width, face.height));
-    }
-    faceMat.delete();
-    faceVect.delete();
-
-    if(!paused) {
-        // Nerual net is very slow, so only run it once after a face has been on screen for a while
-        if(threshold < 500) {
-            if(faces.length > 0)
-                threshold += 2;
-            else if(threshold > 0)
-                threshold--;
-        } else if(faces.length > 0) {
-            threshold = 0;
-            rate(srcMat.roi(faces[0]));
-            // Pause the video feed for 5 seconds
-            paused = true;
-            setTimeout(function() {
-                paused = false;
-                scoreOutput.innerHTML = "";
-            }, 5000);
-        }
-        myBar.style.width = (threshold/5) + "%";
-        canvasOutputCtx.drawImage(canvasInput, 0, 0, videoWidth, videoHeight);
-        // Draw a red box in the picture that's actually analyzed
-        if(paused)
-            drawResults(canvasOutputCtx, faces, "red", size);
-        else
-            drawResults(canvasOutputCtx, faces, "lime", size);
-    }
-    stats.end();
     requestAnimationFrame(processVideo);
+
+    now = window.performance.now();
+    elapsed = now - then;
+
+    if(elapsed >= interval) {
+        then = now - (elapsed % interval);
+
+        stats.begin();
+        
+        canvasInputCtx.drawImage(video, 0, 0, videoWidth, videoHeight);
+        let imageData = canvasInputCtx.getImageData(0, 0, videoWidth, videoHeight);
+        srcMat.data.set(imageData.data);
+        cv.cvtColor(srcMat, grayMat, cv.COLOR_RGBA2GRAY);
+        
+        let faces = [];
+        
+        let faceVect = new cv.RectVector();
+        let faceMat = new cv.Mat();
+        let size;
+
+        cv.equalizeHist(grayMat, faceMat);
+        size = faceMat.size();
+        
+        // Speed hacks: only look for faces that are 50% the height of the picture, much less intensive
+        let minsize = new cv.Size(size.height*.5, size.height*.5);
+        faceClassifier.detectMultiScale(faceMat, faceVect, 1.1, 3, 0, minsize);
+        
+        for(let i = 0; i < faceVect.size(); i++) {
+            let face = faceVect.get(i);
+            faces.push(new cv.Rect(face.x, face.y, face.width, face.height));
+        }
+        faceMat.delete();
+        faceVect.delete();
+
+        if(!paused) {
+            // Nerual net is very slow, so only run it once after a face has been on screen for a while
+            if(threshold < maxThreshold) {
+                if(faces.length > 0)
+                    threshold += 2;
+                else if(threshold > 0)
+                    threshold--;
+            } else if(faces.length > 0) {
+                threshold = 0;
+                rate(srcMat.roi(faces[0]));
+                // Pause the video feed for 5 seconds
+                paused = true;
+                setTimeout(function() {
+                    paused = false;
+                    scoreOutput.innerHTML = "";
+                }, 5000);
+            }
+            myBar.style.width = (threshold/maxThreshold*100) + "%";
+            canvasOutputCtx.drawImage(canvasInput, 0, 0, videoWidth, videoHeight);
+            // Draw a red box in the picture that's actually analyzed
+            if(paused)
+                drawResults(canvasOutputCtx, faces, "red", size);
+            else
+                drawResults(canvasOutputCtx, faces, "lime", size);
+        }
+        stats.end();
+    }
 }
 
 // Draws rectangles to the output
